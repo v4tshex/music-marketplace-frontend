@@ -1,0 +1,29 @@
+/* Tailwind v4 */
+@import "tailwindcss";
+
+/* Inter font (requires the package) */
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/600.css";
+
+/* Your custom CSS */
+body {
+  margin: 0;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+    'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+    'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #000000;
+  color: #ffffff;
+}
+
+/* Set default background and text color for all elements */
+#root {
+  background-color: #000000;
+  color: #ffffff;
+  min-height: 100vh;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
