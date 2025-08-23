@@ -19,7 +19,11 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "swa:build": "npm run build",
+    "swa:start": "swa start build --api-devserver-url http://localhost:5000 --port 4280",
+    "swa:dev": "swa start http://localhost:5173 --api-devserver-url http://localhost:5000 --port 4280",
+    "start:local": "concurrently \"npm run dev\" \"npm run swa:dev\""
   },
   "eslintConfig": {
     "extends": [
@@ -40,10 +44,12 @@
     ]
   },
   "devDependencies": {
+    "@azure/static-web-apps-cli": "^2.0.1",
     "@tailwindcss/postcss": "^4.1.11",
     "@vitejs/plugin-react": "^5.0.0",
     "@vitest/ui": "^3.2.4",
     "autoprefixer": "^10.4.21",
+    "concurrently": "^9.1.0",
     "jsdom": "^26.1.0",
     "postcss": "^8.5.6",
     "sass": "^1.90.0",
