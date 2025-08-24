@@ -1,37 +1,7 @@
 import axios from 'axios';
 
-// Determine the API base URL using Vite environment variables
-const getApiBaseUrl = () => {
-  // Use Vite environment variable with fallback logic
-  const apiUrl = import.meta.env.VITE_API_URL;
-  
-  if (apiUrl) {
-    return apiUrl;
-  }
-  
-  // Fallback for development if no env var is set
-  if (import.meta.env.DEV) {
-    return 'http://localhost:5000';
-  }
-  
-  // Default fallback for production (should not reach here if env vars are properly set)
-  console.warn('VITE_API_URL not set, using default production URL');
-  return '/api';
-};
-
-const baseURL = getApiBaseUrl();
-
-// Debug logging to help troubleshoot environment detection
-console.log('API Base URL:', baseURL);
-console.log('Environment details:', {
-  MODE: import.meta.env.MODE,
-  DEV: import.meta.env.DEV,
-  PROD: import.meta.env.PROD,
-  VITE_API_URL: import.meta.env.VITE_API_URL
-});
-
 const API = axios.create({ 
-  baseURL,
+  baseURL: import.meta.env.VITE_API_BASE_URL,
   timeout: 10000
 });
 
