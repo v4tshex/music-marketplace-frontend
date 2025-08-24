@@ -3,6 +3,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";
 import axios from "axios";
 import MusicPlayer from "../components/MusicPlayer";
+import { getUserSongs, deleteSong } from "../api/api";
 
 function ArtistDashboard() {
   const [mySongs, setMySongs] = useState([]);
@@ -16,8 +17,7 @@ function ArtistDashboard() {
       if (!user || !isMounted) return;
 
       try {
-        const userId = user.uid;
-        const response = await axios.get(`http://localhost:5000/api/my-songs/${userId}`);
+        const response = await getUserSongs();
         if (isMounted) {
           setMySongs(response.data);
 
@@ -53,7 +53,7 @@ function ArtistDashboard() {
     if (!window.confirm("Are you sure you want to delete this song?")) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/songs/${songId}`);
+      await deleteSong(songId);
       setMySongs((prev) => prev.filter((song) => song.id !== songId));
 
       // Also remove its royalty data

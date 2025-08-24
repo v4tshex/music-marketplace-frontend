@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { searchSongs, searchArtists, getArtistSongs, getUserSongs, purchaseSong, getUserPurchases } from "../api/api";
+import { searchSongs, searchArtists, getArtistSongs, getUserSongs, getRecentUserSongs, purchaseSong, getUserPurchases } from "../api/api";
 import MusicPlayer from "../components/MusicPlayer";
 import PaymentModal from "../components/PaymentModal";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -83,18 +83,18 @@ function MusicCatalogue() {
     }
   };
 
-  // Fetch user-uploaded songs
+  // Fetch user-uploaded songs (recent ones for catalogue)
   const fetchUserSongs = async () => {
     setLoading(true);
     try {
-      const res = await getUserSongs();
+      const res = await getRecentUserSongs();
       setUserSongs(res.data);
       setTotalItems(res.data.length);
       setTotalPages(1); // No pagination for user songs for now
       setCurrentPage(1);
     } catch (err) {
-      setError("Failed to load user songs");
-      console.error("Error fetching user songs:", err);
+      setError("Failed to load recent user songs");
+      console.error("Error fetching recent user songs:", err);
     } finally {
       setLoading(false);
     }
@@ -225,6 +225,8 @@ function MusicCatalogue() {
       console.error("Purchase failed:", err);
       if (err.response?.status === 409) {
         alert("You have already purchased this song.");
+      } else if (err.response?.status === 403) {
+        alert("You cannot purchase your own uploaded songs.");
       } else {
         alert("Something went wrong with the purchase. Please try again.");
       }
@@ -450,7 +452,7 @@ function MusicCatalogue() {
               fontWeight: viewMode === "user-songs" ? "bold" : "normal"
             }}
           >
-            User Songs
+            New User Songs
           </button>
           <button
             onClick={() => handleViewModeChange("artists")}
@@ -528,12 +530,12 @@ function MusicCatalogue() {
       <div>
         <h2>
           {viewMode === "songs" && "Music Catalogue"}
-          {viewMode === "user-songs" && "User Uploaded Songs"}
+          {viewMode === "user-songs" && "New User Uploaded Songs"}
           {viewMode === "artists" && "Artists"}
           {viewMode === "artist-songs" && `${selectedArtist?.name} - Songs`}
           {searchTerm && ` (${totalItems} found)`}
           {!searchTerm && viewMode !== "artist-songs" && viewMode !== "user-songs" && ` (${totalItems} total ${viewMode})`}
-          {!searchTerm && viewMode === "user-songs" && ` (${totalItems} available for purchase)`}
+          {!searchTerm && viewMode === "user-songs" && ` (${totalItems} from last month)`}
           {!searchTerm && viewMode === "artist-songs" && ` (${totalItems} songs)`}
         </h2>
         
@@ -554,7 +556,7 @@ function MusicCatalogue() {
 
         {!loading && viewMode === "user-songs" && userSongs.length === 0 && (
           <p style={{ textAlign: "center", color: "#aaa", marginTop: "40px" }}>
-            No user-uploaded songs available for purchase.
+            No new user-uploaded songs from the last month.
           </p>
         )}
 
@@ -1026,8 +1028,8 @@ function MusicCatalogue() {
                       </div>
                     )}
 
-                    {/* Purchase Button */}
-                    {currentUser && !purchasedSongIds.includes(song.id) && (
+                    {/* Purchase Button - Hide if user owns the song */}
+                    {currentUser && !purchasedSongIds.includes(song.id) && currentUser.uid !== song.ownerId && (
                       <div style={{ marginTop: "15px", textAlign: "center" }}>
                         <button
                           onClick={() => handlePurchase(song, 'user')}
@@ -1051,6 +1053,22 @@ function MusicCatalogue() {
                         >
                           Purchase £0.99
                         </button>
+                      </div>
+                    )}
+
+                    {/* Own Song Message */}
+                    {currentUser && currentUser.uid === song.ownerId && (
+                      <div style={{ marginTop: "15px", textAlign: "center" }}>
+                        <div style={{
+                          padding: "10px 20px",
+                          backgroundColor: "#6c757d",
+                          color: "white",
+                          borderRadius: "6px",
+                          fontSize: "14px",
+                          fontWeight: "bold"
+                        }}>
+                          Your Song
+                        </div>
                       </div>
                     )}
 

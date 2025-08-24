@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
-import { api } from "../api/api";
+import { createUser } from "../api/api";
 
 function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -71,7 +71,7 @@ function RegisterPage() {
         artistName: isArtist ? artistName : null
       };
       
-      await api.post('/api/users', userData);
+      await createUser(userData);
       navigate("/dashboard"); // Redirect after registration
     } catch (err) {
       setError(err.message);

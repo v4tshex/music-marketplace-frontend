@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../firebase";
-import { api } from "../api/api";
 import { useNavigate } from "react-router-dom";
+import { getUser, updateUser } from "../api/api";
 
 function ProfilePage() {
   const [user, loading, error] = useAuthState(auth);
@@ -40,7 +40,7 @@ function ProfilePage() {
 
   const fetchUserProfile = async () => {
     try {
-      const response = await api.get(`/api/users/${user.uid}`);
+      const response = await getUser(user.uid);
       const profileData = response.data;
       setProfile(profileData);
       
@@ -92,7 +92,7 @@ function ProfilePage() {
         artistName: isArtist ? artistName : null
       };
 
-      await api.put(`/api/users/${user.uid}`, userData);
+      await updateUser(user.uid, userData);
       setSaveSuccess(true);
       setIsEditing(false);
       fetchUserProfile(); // Refresh profile data

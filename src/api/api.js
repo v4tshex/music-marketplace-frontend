@@ -1,8 +1,19 @@
 import axios from 'axios';
+import { auth } from '../firebase';
 
 const API = axios.create({ 
   baseURL: import.meta.env.VITE_API_BASE_URL,
   timeout: 10000
+});
+
+// Add request interceptor to include authentication token
+API.interceptors.request.use(async (config) => {
+  const user = auth.currentUser;
+  if (user) {
+    const token = await user.getIdToken();
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 // Export API instance for direct use
@@ -22,6 +33,11 @@ export const simulatePayment = (artistId, totalAmount) => API.post('/simulate-pa
 
 // User songs and purchases API
 export const getUserSongs = () => API.get('/user-songs');
+export const getRecentUserSongs = () => API.get('/recent-user-songs');
 export const getUserPurchases = (userId) => API.get(`/purchases/${userId}`);
 export const purchaseSong = (userId, songId, paymentData = null) => API.post('/purchase', { userId, songId, paymentData });
-
+export const createUser = (userData) => API.post('/users', userData);
+export const getUser = (userId) => API.get(`/users/${userId}`);
+export const updateUser = (userId, userData) => API.put(`/users/${userId}`, userData);
+export const getMySongs = (userId) => API.get(`/my-songs/${userId}`);
+export const deleteSong = (songId) => API.delete(`/songs/${songId}`);
