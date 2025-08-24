@@ -1,33 +1,33 @@
 import axios from 'axios';
 
-// Determine the API base URL based on environment
+// Determine the API base URL using Vite environment variables
 const getApiBaseUrl = () => {
-  // Check if we're running in a production environment
-  const isProduction = process.env.NODE_ENV === 'production' || 
-                      window.location.hostname !== 'localhost' && 
-                      window.location.hostname !== '127.0.0.1';
+  // Use Vite environment variable with fallback logic
+  const apiUrl = import.meta.env.VITE_API_URL;
   
-  if (isProduction) {
-    // In production, use relative URLs to leverage Azure Static Web Apps API proxy
-    return '/api';
-  } else if (window.location.port === '4280') {
-    // When running with Azure Static Web Apps CLI (swa start)
-    return '/api';
-  } else {
-    // Local development with Vite dev server
+  if (apiUrl) {
+    return apiUrl;
+  }
+  
+  // Fallback for development if no env var is set
+  if (import.meta.env.DEV) {
     return 'http://localhost:5000';
   }
+  
+  // Default fallback for production (should not reach here if env vars are properly set)
+  console.warn('VITE_API_URL not set, using default production URL');
+  return '/api';
 };
 
 const baseURL = getApiBaseUrl();
 
 // Debug logging to help troubleshoot environment detection
-console.log('API Base URL detected:', baseURL);
+console.log('API Base URL:', baseURL);
 console.log('Environment details:', {
-  NODE_ENV: process.env.NODE_ENV,
-  hostname: window.location.hostname,
-  port: window.location.port,
-  href: window.location.href
+  MODE: import.meta.env.MODE,
+  DEV: import.meta.env.DEV,
+  PROD: import.meta.env.PROD,
+  VITE_API_URL: import.meta.env.VITE_API_URL
 });
 
 const API = axios.create({ 

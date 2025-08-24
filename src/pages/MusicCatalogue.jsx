@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { searchSongs, searchArtists, getArtistSongs, getUserSongs, purchaseSong } from "../api/api";
+import { searchSongs, searchArtists, getArtistSongs, getUserSongs, purchaseSong, getUserPurchases } from "../api/api";
 import MusicPlayer from "../components/MusicPlayer";
 import PaymentModal from "../components/PaymentModal";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -166,9 +166,7 @@ function MusicCatalogue() {
 
       if (user) {
         try {
-          const purchasesRes = await axios.get(
-            `http://localhost:5000/api/purchases/${user.uid}`
-          );
+          const purchasesRes = await getUserPurchases(user.uid);
           const ids = purchasesRes.data.map((p) => p.songId);
           setPurchasedSongIds(ids);
         } catch (err) {

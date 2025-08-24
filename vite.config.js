@@ -2,20 +2,25 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
-  
-  server: {
-    port: 5173,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:5000',
-        changeOrigin: true,
-        secure: false
-      }
+export default defineConfig(({ mode }) => {
+  return {
+    plugins: [react(), tailwindcss()],
+    
+    server: {
+      port: 5173
+    
+    },
+    
+    build: {
+      outDir: 'build'
+    },
+    
+    // Define environment variables with defaults
+    define: {
+      // Ensure environment variables are available at build time
+      'import.meta.env.VITE_API_URL': JSON.stringify(
+        process.env.VITE_API_URL || (mode === 'development' ? 'http://localhost:5000' : undefined)
+      )
     }
-  },
-  build: {
-    outDir: 'build' 
   }
 })
