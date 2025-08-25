@@ -166,9 +166,25 @@ function OwnedMusicPage() {
                     justifyContent: "center",
                     alignItems: "center"
                   }}>
-                    {song.imageUrl ? (
+                    {/* Prefer user song imageUrl; fallback to spotify album media[0].blob_url */}
+                    {(song && song.imageUrl) ? (
                       <img
                         src={song.imageUrl}
+                        alt="Album Art"
+                        style={{
+                          width: "120px",
+                          height: "120px",
+                          objectFit: "cover",
+                          borderRadius: "8px",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.2)"
+                        }}
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    ) : (song && song.album && song.album.media && song.album.media[0] && song.album.media[0].blob_url) ? (
+                      <img
+                        src={song.album.media[0].blob_url}
                         alt="Album Art"
                         style={{
                           width: "120px",
@@ -206,16 +222,16 @@ function OwnedMusicPage() {
                       fontSize: "18px",
                       color: "#ffffff"
                     }}>
-                      {song.title}
+                      {song ? (song.title || song.name) : 'Unknown Title'}
                     </h3>
                     <p style={{
                       margin: "4px 0",
                       color: "#ccc",
                       fontSize: "14px"
                     }}>
-                      by {song.artist}
+                      by {song ? (song.artist || (song.track_artists && song.track_artists.map(t => t.artist?.name).filter(Boolean).join(', ')) || 'Unknown Artist') : 'Unknown Artist'}
                     </p>
-                    {song.genre && (
+                    {song && song.genre && (
                       <p style={{
                         margin: "4px 0",
                         color: "#aaa",
@@ -234,14 +250,14 @@ function OwnedMusicPage() {
                   </div>
 
                   {/* Audio Player */}
-                  {song.fileUrl && (
+                  {(song && song.fileUrl) || (song && song.preview_url) ? (
                     <div style={{ marginBottom: "15px" }}>
                       <audio controls style={{ width: "100%" }}>
-                        <source src={song.fileUrl} type="audio/mpeg" />
+                        <source src={(song.fileUrl || song.preview_url)} type="audio/mpeg" />
                         Your browser does not support the audio element.
                       </audio>
                     </div>
-                  )}
+                  ) : null}
 
                   {/* Download Button */}
                   <div style={{ textAlign: "center" }}>
@@ -270,7 +286,7 @@ function OwnedMusicPage() {
                   </div>
 
                   {/* Play count if available */}
-                  {song.plays > 0 && (
+                  {song && song.plays > 0 && (
                     <div style={{
                       marginTop: "10px",
                       textAlign: "center",

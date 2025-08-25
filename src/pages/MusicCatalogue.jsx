@@ -8,6 +8,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 function MusicCatalogue() {
   const [songs, setSongs] = useState([]);
   const [userSongs, setUserSongs] = useState([]);
+  const [recentUserSongs, setRecentUserSongs] = useState([]);
   const [artists, setArtists] = useState([]);
   const [selectedArtist, setSelectedArtist] = useState(null);
   const [artistSongs, setArtistSongs] = useState([]);
@@ -17,6 +18,15 @@ function MusicCatalogue() {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [viewMode, setViewMode] = useState("songs"); // "songs", "user-songs", "artists", or "artist-songs"
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    explicit: undefined,
+    hasPreview: undefined,
+    minDurationSec: "",
+    maxDurationSec: "",
+    sortBy: "name",
+    sortOrder: "asc"
+  });
   
   // Payment modal state
   const [paymentModal, setPaymentModal] = useState({
@@ -35,7 +45,18 @@ function MusicCatalogue() {
   const fetchSongs = async (search = "", page = 1) => {
     setLoading(true);
     try {
-      const res = await searchSongs(search, page, itemsPerPage);
+      const apiFilters = showFilters ? {
+        sortBy: filters.sortBy,
+        sortOrder: filters.sortOrder,
+      } : undefined;
+      if (apiFilters) {
+        if (filters.explicit !== undefined) apiFilters.explicit = filters.explicit;
+        if (filters.hasPreview !== undefined) apiFilters.hasPreview = filters.hasPreview;
+        if (filters.minDurationSec !== "") apiFilters.minDurationSec = parseInt(filters.minDurationSec, 10) || 0;
+        if (filters.maxDurationSec !== "") apiFilters.maxDurationSec = parseInt(filters.maxDurationSec, 10) || 0;
+      }
+
+      const res = await searchSongs(search, page, itemsPerPage, apiFilters);
       setSongs(res.data.songs);
       setTotalItems(res.data.pagination.totalItems);
       setTotalPages(res.data.pagination.totalPages);
@@ -100,6 +121,17 @@ function MusicCatalogue() {
     }
   };
 
+  // Fetch recent user songs for the catalogue section (doesn't affect loading state)
+  const fetchRecentUserSongsForCatalogue = async () => {
+    try {
+      const res = await getRecentUserSongs();
+      setRecentUserSongs(res.data);
+    } catch (err) {
+      console.error("Error fetching recent user songs for catalogue:", err);
+      // Don't show error to user as this is a secondary feature
+    }
+  };
+
   // Unified fetch function that handles songs, artists, and artist songs
   const fetchData = async (search = "", page = 1) => {
     if (viewMode === "songs") {
@@ -121,7 +153,7 @@ function MusicCatalogue() {
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, viewMode]);
+  }, [searchTerm, viewMode, filters, showFilters]);
 
   // Handle view mode change
   const handleViewModeChange = (newMode) => {
@@ -129,6 +161,15 @@ function MusicCatalogue() {
     setCurrentPage(1);
     setError("");
     setSearchTerm(""); // Clear search when switching modes
+    setShowFilters(false);
+    setFilters({
+      explicit: undefined,
+      hasPreview: undefined,
+      minDurationSec: "",
+      maxDurationSec: "",
+      sortBy: "name",
+      sortOrder: "asc"
+    });
   };
 
   // Handle artist click to view their songs
@@ -177,6 +218,9 @@ function MusicCatalogue() {
 
     // Initial load
     fetchData("", 1);
+    
+    // Also fetch recent user songs for the catalogue section
+    fetchRecentUserSongsForCatalogue();
 
     return () => unsubscribe();
   }, []);
@@ -207,7 +251,7 @@ function MusicCatalogue() {
     }
 
     try {
-      const response = await purchaseSong(user.uid, paymentModal.song.id, paymentData);
+      const response = await purchaseSong(user.uid, paymentModal.song.id, paymentData, paymentModal.songType);
       const songTitle = paymentModal.songType === 'user' ? paymentModal.song.title : paymentModal.song.name;
       
       alert(`Payment successful! You have purchased "${songTitle}" for £${response.data.price}. This is a dummy transaction for university project purposes.`);
@@ -473,7 +517,8 @@ function MusicCatalogue() {
         </div>
       )}
 
-      {/* Search Bar - Hidden in artist-songs and user-songs mode */}
+      {/* Search Bar - Hidden in artist-songs and user-songs mode */
+      }
       {viewMode !== "artist-songs" && viewMode !== "user-songs" && (
         <div style={{ 
           marginBottom: "30px",
@@ -527,6 +572,105 @@ function MusicCatalogue() {
         </div>
       )}
 
+      {/* Filters dropdown button and panel (songs view only) */}
+      {viewMode === "songs" && (
+        <div style={{ marginBottom: "10px", display: "flex", justifyContent: "center" }}>
+          <button
+            onClick={() => setShowFilters((prev) => !prev)}
+            style={{
+              padding: "8px 16px",
+              border: "2px solid #444",
+              borderRadius: "20px",
+              background: showFilters ? "#007bff" : "#111",
+              color: "#ffffff",
+              cursor: "pointer"
+            }}
+          >
+            {showFilters ? "Hide Filters" : "Show Filters"}
+          </button>
+        </div>
+      )}
+
+      {viewMode === "songs" && showFilters && (
+        <div style={{
+          marginBottom: "20px",
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "10px",
+          justifyContent: "center"
+        }}>
+          <select
+            value={filters.explicit === undefined ? "" : filters.explicit ? "true" : "false"}
+            onChange={(e) => {
+              const val = e.target.value;
+              setFilters((prev) => ({ ...prev, explicit: val === "" ? undefined : val === "true" }));
+            }}
+            style={{ padding: "8px 12px", background: "#111", color: "#fff", border: "1px solid #444", borderRadius: "8px" }}
+          >
+            <option value="">All Content</option>
+            <option value="false">Clean only</option>
+            <option value="true">Explicit only</option>
+          </select>
+
+          <select
+            value={filters.hasPreview === undefined ? "" : filters.hasPreview ? "true" : "false"}
+            onChange={(e) => {
+              const val = e.target.value;
+              setFilters((prev) => ({ ...prev, hasPreview: val === "" ? undefined : val === "true" }));
+            }}
+            style={{ padding: "8px 12px", background: "#111", color: "#fff", border: "1px solid #444", borderRadius: "8px" }}
+          >
+            <option value="">All Tracks</option>
+            <option value="true">Has Preview</option>
+            <option value="false">No Preview</option>
+          </select>
+
+          <input
+            type="number"
+            min="0"
+            placeholder="Min sec"
+            value={filters.minDurationSec}
+            onChange={(e) => setFilters((prev) => ({ ...prev, minDurationSec: e.target.value }))}
+            style={{ width: "100px", padding: "8px 12px", background: "#111", color: "#fff", border: "1px solid #444", borderRadius: "8px" }}
+          />
+
+          <input
+            type="number"
+            min="0"
+            placeholder="Max sec"
+            value={filters.maxDurationSec}
+            onChange={(e) => setFilters((prev) => ({ ...prev, maxDurationSec: e.target.value }))}
+            style={{ width: "100px", padding: "8px 12px", background: "#111", color: "#fff", border: "1px solid #444", borderRadius: "8px" }}
+          />
+
+          <select
+            value={filters.sortBy}
+            onChange={(e) => setFilters((prev) => ({ ...prev, sortBy: e.target.value }))}
+            style={{ padding: "8px 12px", background: "#111", color: "#fff", border: "1px solid #444", borderRadius: "8px" }}
+          >
+            <option value="name">Sort: Name</option>
+            <option value="duration_ms">Sort: Duration</option>
+            <option value="album_release_date">Sort: Release date</option>
+          </select>
+
+          <select
+            value={filters.sortOrder}
+            onChange={(e) => setFilters((prev) => ({ ...prev, sortOrder: e.target.value }))}
+            style={{ padding: "8px 12px", background: "#111", color: "#fff", border: "1px solid #444", borderRadius: "8px" }}
+          >
+            <option value="asc">Asc</option>
+            <option value="desc">Desc</option>
+          </select>
+
+          <button
+            onClick={() => setFilters({ explicit: undefined, hasPreview: undefined, minDurationSec: "", maxDurationSec: "", sortBy: "name", sortOrder: "asc" })}
+            style={{ padding: "8px 12px", background: "#222", color: "#fff", border: "1px solid #444", borderRadius: "8px", cursor: "pointer" }}
+          >
+            Clear filters
+          </button>
+        </div>
+      )}
+
       <div>
         <h2>
           {viewMode === "songs" && "Music Catalogue"}
@@ -566,9 +710,228 @@ function MusicCatalogue() {
           </p>
         )}
 
+        {/* Recent User Uploads Section - Only show in main catalogue */}
+        {viewMode === "songs" && recentUserSongs.length > 0 && (
+          <>
+            <div style={{ marginBottom: "40px" }}>
+              <h3 style={{ 
+                color: "#ffffff", 
+                marginBottom: "20px", 
+                borderBottom: "2px solid #007bff", 
+                paddingBottom: "10px",
+                fontSize: "20px"
+              }}>
+                New User Uploads (Last Month)
+              </h3>
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))",
+                gap: "20px",
+                marginBottom: "20px"
+              }}>
+                {recentUserSongs.slice(0, 6).map((song) => (
+                  <div
+                    key={song.id}
+                    style={{
+                      padding: "20px",
+                      border: "1px solid #444",
+                      borderRadius: "12px",
+                      backgroundColor: "#1a1a1a",
+                      boxShadow: "0 4px 8px rgba(0,0,0,0.3)",
+                      transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                      cursor: "pointer"
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = "translateY(-4px)";
+                      e.target.style.boxShadow = "0 8px 16px rgba(0,0,0,0.4)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = "translateY(0)";
+                      e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.3)";
+                    }}
+                  >
+                    {/* Album Art */}
+                    <div style={{ 
+                      marginBottom: "15px", 
+                      textAlign: "center",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center"
+                    }}>
+                      {song.imageUrl ? (
+                        <img
+                          src={song.imageUrl}
+                          alt="Album Art"
+                          style={{
+                            width: "150px",
+                            height: "150px",
+                            objectFit: "cover",
+                            borderRadius: "8px",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.2)"
+                          }}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <div style={{
+                          width: "150px",
+                          height: "150px",
+                          backgroundColor: "#333",
+                          borderRadius: "8px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "#aaa",
+                          fontSize: "14px",
+                          textAlign: "center"
+                        }}>
+                          No Art
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Song Information */}
+                    <div>
+                      <h4 style={{ margin: "0 0 8px 0", fontSize: "16px", color: "#ffffff", textAlign: "center" }}>
+                        {song.title}
+                        {song.explicit && <span style={{ color: "#ff6b6b", marginLeft: "8px", fontSize: "12px" }}>EXPLICIT</span>}
+                      </h4>
+                      <p style={{ margin: "4px 0", color: "#ccc", fontSize: "14px", textAlign: "center" }}>
+                        by {song.artist}
+                      </p>
+                      {song.genre && (
+                        <p style={{ margin: "4px 0", color: "#aaa", fontSize: "12px", textAlign: "center" }}>
+                          Genre: {song.genre}
+                        </p>
+                      )}
+                      <p style={{ margin: "4px 0", color: "#aaa", fontSize: "12px", textAlign: "center" }}>
+                        Uploaded: {new Date(song.uploadedAt).toLocaleDateString()} • {song.plays || 0} plays
+                      </p>
+
+                      {/* Audio Player */}
+                      {song.fileUrl && (
+                        <div style={{ marginTop: "10px" }}>
+                          <audio controls style={{ width: "100%" }}>
+                            <source src={song.fileUrl} type="audio/mpeg" />
+                            Your browser does not support the audio element.
+                          </audio>
+                        </div>
+                      )}
+
+                      {/* Purchase Button - Hide if user owns the song */}
+                      {currentUser && !purchasedSongIds.includes(song.id) && currentUser.uid !== song.ownerId && (
+                        <div style={{ marginTop: "10px", textAlign: "center" }}>
+                          <button
+                            onClick={() => handlePurchase(song, 'user')}
+                            style={{
+                              padding: "8px 16px",
+                              background: "#007bff",
+                              color: "#fff",
+                              border: "none",
+                              borderRadius: "6px",
+                              cursor: "pointer",
+                              fontSize: "14px",
+                              fontWeight: "bold",
+                              transition: "background-color 0.2s ease"
+                            }}
+                            onMouseEnter={(e) => {
+                              e.target.style.backgroundColor = "#0056b3";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.target.style.backgroundColor = "#007bff";
+                            }}
+                          >
+                            Purchase £0.99
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Own Song Message */}
+                      {currentUser && currentUser.uid === song.ownerId && (
+                        <div style={{ marginTop: "10px", textAlign: "center" }}>
+                          <div style={{
+                            padding: "8px 16px",
+                            backgroundColor: "#6c757d",
+                            color: "white",
+                            borderRadius: "6px",
+                            fontSize: "14px",
+                            fontWeight: "bold"
+                          }}>
+                            Your Song
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Already Purchased */}
+                      {currentUser && purchasedSongIds.includes(song.id) && (
+                        <div style={{ marginTop: "10px", textAlign: "center" }}>
+                          <div style={{
+                            padding: "8px 16px",
+                            backgroundColor: "#28a745",
+                            color: "white",
+                            borderRadius: "6px",
+                            fontSize: "14px",
+                            fontWeight: "bold"
+                          }}>
+                            Purchased
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Login prompt for non-authenticated users */}
+                      {!currentUser && (
+                        <div style={{ marginTop: "10px", textAlign: "center" }}>
+                          <p style={{ fontSize: "12px", color: "#aaa", marginBottom: "8px" }}>
+                            Log in to purchase this song
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Show more link if there are more than 6 songs */}
+              {recentUserSongs.length > 6 && (
+                <div style={{ textAlign: "center", marginBottom: "20px" }}>
+                  <button
+                    onClick={() => setViewMode("user-songs")}
+                    style={{
+                      padding: "10px 20px",
+                      backgroundColor: "#007bff",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      textDecoration: "none"
+                    }}
+                  >
+                    View All Recent User Songs ({recentUserSongs.length})
+                  </button>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
         {/* Songs Grid View */}
         {!loading && viewMode === "songs" && songs.length > 0 && (
           <>
+            {/* Add section header for Spotify songs */}
+            <div style={{ marginBottom: "40px" }}>
+              <h3 style={{ 
+                color: "#ffffff", 
+                marginBottom: "20px", 
+                borderBottom: "2px solid #1DB954", 
+                paddingBottom: "10px",
+                fontSize: "20px"
+              }}>
+                Catalogue
+              </h3>
+            </div>
+            
             <div style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
