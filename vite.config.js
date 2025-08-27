@@ -15,6 +15,13 @@ export default defineConfig(({ mode }) => {
       outDir: 'build'
     },
     
+    test: {
+      environment: 'jsdom',
+      setupFiles: './src/setupTests.js',
+      globals: true,
+      css: true
+    },
+    
     // Define environment variables with defaults
     define: {
       // Ensure environment variables are available at build time
