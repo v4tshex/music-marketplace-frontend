@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { searchSongs, searchArtists, getArtistSongs, getUserSongs, getRecentUserSongs, purchaseSong, getUserPurchases } from "../api/api";
-import MusicPlayer from "../components/MusicPlayer";
 import PaymentModal from "../components/PaymentModal";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 

@@ -3,6 +3,7 @@ import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import { auth } from "../firebase";
 import { getAuth } from "firebase/auth";
+import { uploadSong } from "../api/api";
 
 const currentUser = auth.currentUser;
 
@@ -69,12 +70,8 @@ const handleUpload = async () => {
     setUploadStatus("Uploading files...");
     setCurrentUploadProgress(0);
 
-    const uploadRes = await axios.post("http://localhost:5000/upload", formData, {
-      onUploadProgress: (progressEvent) => {
-        const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-        setCurrentUploadProgress(percent);
-      },
-    });
+   // const uploadRes = await axios.post("http://localhost:5000/upload", formData, {
+    const uploadRes = await uploadSong(formData);
 
     const { fileUrl, imageUrl } = uploadRes.data;
 
