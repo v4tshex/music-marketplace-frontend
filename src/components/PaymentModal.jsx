@@ -1,5 +1,7 @@
+// payment modal handles dummy checkout flow and validation
 import React, { useState } from 'react';
 
+// payment modal component
 const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, song, songType = 'spotify' }) => {
   const [formData, setFormData] = useState({
     cardNumber: '',
@@ -11,8 +13,9 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, song, songType = 'spo
   const [isProcessing, setIsProcessing] = useState(false);
   const [errors, setErrors] = useState({});
 
-  const price = 0.99; // Fixed price for all tracks
+  const price = 0.99; 
 
+  // reset form inputs and state
   const resetForm = () => {
     setFormData({
       cardNumber: '',
@@ -25,15 +28,16 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, song, songType = 'spo
     setIsProcessing(false);
   };
 
+  // simple client side validation
   const validateForm = () => {
     const newErrors = {};
 
-    // Card number validation (simple check for 16 digits)
+    
     if (!formData.cardNumber || formData.cardNumber.replace(/\s/g, '').length !== 16) {
       newErrors.cardNumber = 'Please enter a valid 16-digit card number';
     }
 
-    // Expiry date validation (MM/YY format)
+    
     if (!formData.expiryDate || !/^\d{2}\/\d{2}$/.test(formData.expiryDate)) {
       newErrors.expiryDate = 'Please enter expiry date in MM/YY format';
     } else {
@@ -49,17 +53,17 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, song, songType = 'spo
       }
     }
 
-    // CVV validation (3 digits)
+    
     if (!formData.cvv || !/^\d{3}$/.test(formData.cvv)) {
       newErrors.cvv = 'Please enter a valid 3-digit CVV';
     }
 
-    // Cardholder name validation
+    
     if (!formData.cardholderName.trim()) {
       newErrors.cardholderName = 'Please enter cardholder name';
     }
 
-    // Email validation
+    
     if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
     }
@@ -68,16 +72,17 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, song, songType = 'spo
     return Object.keys(newErrors).length === 0;
   };
 
+  // mask and normalize inputs while typing
   const handleInputChange = (e) => {
     let { name, value } = e.target;
 
-    // Format card number (add spaces every 4 digits)
+    
     if (name === 'cardNumber') {
       value = value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
       if (value.replace(/\s/g, '').length > 16) return;
     }
 
-    // Format expiry date (add slash after 2 digits)
+    
     if (name === 'expiryDate') {
       value = value.replace(/\D/g, '');
       if (value.length >= 2) {
@@ -85,7 +90,7 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, song, songType = 'spo
       }
     }
 
-    // CVV - only allow 3 digits
+    
     if (name === 'cvv') {
       value = value.replace(/\D/g, '').substring(0, 3);
     }
@@ -95,7 +100,7 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, song, songType = 'spo
       [name]: value
     }));
 
-    // Clear error for this field when user starts typing
+    
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -104,6 +109,7 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, song, songType = 'spo
     }
   };
 
+  // simulate async payment then notify parent
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -113,9 +119,9 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, song, songType = 'spo
 
     setIsProcessing(true);
 
-    // Simulate payment processing delay
+    
     setTimeout(() => {
-      // Simulate successful payment
+      
       onPaymentSuccess({
         paymentId: `PAY_${Date.now()}`,
         amount: price,
@@ -130,6 +136,7 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, song, songType = 'spo
     }, 2000);
   };
 
+  // prevent closing while processing
   const handleClose = () => {
     if (!isProcessing) {
       resetForm();
@@ -137,8 +144,10 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, song, songType = 'spo
     }
   };
 
+  // hide modal when closed
   if (!isOpen) return null;
 
+  // derive song title for header
   const getSongTitle = () => {
     if (songType === 'user') {
       return song?.title || 'Unknown Track';
@@ -146,6 +155,7 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, song, songType = 'spo
     return song?.name || 'Unknown Track';
   };
 
+  // derive artist name for header
   const getArtistName = () => {
     if (songType === 'user') {
       return song?.artist || 'Unknown Artist';
@@ -178,7 +188,7 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, song, songType = 'spo
         overflowY: 'auto',
         boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)'
       }}>
-        {/* Header */}
+        {/* header row */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -212,7 +222,7 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, song, songType = 'spo
           </button>
         </div>
 
-        {/* Song Information */}
+        {/* selected item summary */}
         <div style={{
           backgroundColor: '#111',
           border: '1px solid #333',
@@ -254,9 +264,9 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, song, songType = 'spo
           </div>
         </div>
 
-        {/* Payment Form */}
+        {/* form fields */}
         <form onSubmit={handleSubmit}>
-          {/* Card Number */}
+          {/* card number */}
           <div style={{ marginBottom: '20px' }}>
             <label style={{
               display: 'block',
@@ -293,7 +303,7 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, song, songType = 'spo
             )}
           </div>
 
-          {/* Expiry Date and CVV */}
+          {/* expiry date and cvv */}
           <div style={{
             display: 'flex',
             gap: '15px',
@@ -371,7 +381,7 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, song, songType = 'spo
             </div>
           </div>
 
-          {/* Cardholder Name */}
+          {/* cardholder name */}
           <div style={{ marginBottom: '20px' }}>
             <label style={{
               display: 'block',
@@ -408,7 +418,7 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, song, songType = 'spo
             )}
           </div>
 
-          {/* Email */}
+          {/* email */}
           <div style={{ marginBottom: '25px' }}>
             <label style={{
               display: 'block',
@@ -445,7 +455,7 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, song, songType = 'spo
             )}
           </div>
 
-          {/* Disclaimer */}
+          {/* notice for university project */}
           <div style={{
             backgroundColor: '#2a2a0f',
             border: '1px solid #555500',
@@ -465,7 +475,7 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, song, songType = 'spo
             </p>
           </div>
 
-          {/* Action Buttons */}
+          {/* action buttons */}
           <div style={{
             display: 'flex',
             gap: '15px',
@@ -526,7 +536,7 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, song, songType = 'spo
           </div>
         </form>
 
-        {/* CSS Animation for spinner */}
+        {/* inline style for spinner */}
         <style>
           {`
             @keyframes spin {

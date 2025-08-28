@@ -1,7 +1,8 @@
-// components/SongCard.js
+// card that displays user uploaded song details
 import React from "react";
 import MusicPlayer from "./MusicPlayer";
 
+// song card component
 function SongCard({ song }) {
   return (
     <li

@@ -6,7 +6,7 @@ import PrivateRoute from '../components/PrivateRoute'
 vi.mock('../firebase', () => ({ auth: {} }))
 vi.mock('firebase/auth', () => ({
   onAuthStateChanged: (_auth, cb) => {
-    // default: not authed
+    
     cb(null)
     return () => {}
   }

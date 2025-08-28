@@ -1,5 +1,6 @@
-// src/pages/RegisterPage.js
+
 import React, { useState } from "react";
+// page for creating a new user account and profile
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
@@ -30,6 +31,7 @@ function RegisterPage() {
     "Funk", "Gospel", "Latin", "World Music"
   ];
 
+  // toggle selected genres in local state
   const handleGenreChange = (genre) => {
     setGenrePreferences(prev => 
       prev.includes(genre) 
@@ -38,12 +40,13 @@ function RegisterPage() {
     );
   };
 
+  // create firebase user then persist profile to backend
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
     
-    // Check compliance agreements
+    
     if (!acceptedTerms || !acceptedPrivacy) {
       setError("You must accept the Terms of Service and Privacy Policy to register.");
       setIsLoading(false);
@@ -51,11 +54,11 @@ function RegisterPage() {
     }
     
     try {
-      // Create Firebase user
+      
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
       
-      // Create user profile in database
+      
       const userData = {
         firebaseUid: firebaseUser.uid,
         email: email,
@@ -72,7 +75,7 @@ function RegisterPage() {
       };
       
       await createUser(userData);
-      navigate("/dashboard"); // Redirect after registration
+      navigate("/dashboard"); 
     } catch (err) {
       setError(err.message);
     } finally {
@@ -100,7 +103,7 @@ function RegisterPage() {
       <form onSubmit={handleRegister} style={{ width: 500, maxWidth: "90%", textAlign: "left", border: "1px solid #333", padding: 24, borderRadius: 8, backgroundColor: "#111", height: "fit-content" }}>
         <h2 style={{ color: "#ffffff", textAlign: "center", marginBottom: "20px" }}>Create Your Account</h2>
         
-        {/* Basic Information */}
+        {/* basic account details */}
         <h3 style={{ color: "#007bff", marginBottom: "15px" }}>Basic Information</h3>
         <input
           type="email"
@@ -119,7 +122,7 @@ function RegisterPage() {
           required
         />
         
-        {/* Personal Details */}
+        {/* personal profile details */}
         <h3 style={{ color: "#007bff", marginBottom: "15px", marginTop: "20px" }}>Personal Details</h3>
         <div style={{ display: "flex", gap: "10px" }}>
           <input
@@ -172,7 +175,7 @@ function RegisterPage() {
           style={{ ...inputStyle, height: "80px", resize: "vertical" }}
         />
         
-        {/* Music Preferences */}
+        {/* user music preferences */}
         <h3 style={{ color: "#007bff", marginBottom: "15px", marginTop: "20px" }}>Music Preferences</h3>
         <p style={{ fontSize: "14px", color: "#ccc", marginBottom: "10px" }}>Select your favorite genres:</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "5px", marginBottom: "15px" }}>
@@ -189,7 +192,7 @@ function RegisterPage() {
           ))}
         </div>
         
-        {/* Artist Information */}
+        {/* artist specific fields */}
         <h3 style={{ color: "#007bff", marginBottom: "15px", marginTop: "20px" }}>Artist Information</h3>
         <label style={{ display: "flex", alignItems: "center", marginBottom: "15px", cursor: "pointer" }}>
           <input
@@ -211,7 +214,7 @@ function RegisterPage() {
           />
         )}
         
-        {/* Legal Agreements */}
+        {/* legal consents */}
         <h3 style={{ color: "#007bff", marginBottom: "15px", marginTop: "20px" }}>Legal Agreements</h3>
         <div style={{ marginBottom: "20px", padding: "15px", backgroundColor: "#1a1a1a", borderRadius: "6px", border: "1px solid #333" }}>
           <label style={{ display: "flex", alignItems: "flex-start", marginBottom: "15px", cursor: "pointer", lineHeight: "1.4" }}>

@@ -22,9 +22,9 @@ export default defineConfig(({ mode }) => {
       css: true
     },
     
-    // Define environment variables with defaults
+    
     define: {
-      // Ensure environment variables are available at build time
+      
       'import.meta.env.VITE_API_URL': JSON.stringify(
         process.env.VITE_API_URL || (mode === 'development' ? 'http://localhost:5000' : undefined)
       )

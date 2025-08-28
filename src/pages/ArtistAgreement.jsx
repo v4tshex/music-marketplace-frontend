@@ -1,3 +1,4 @@
+// static page for artist agreement and upload policy
 import React from 'react';
 
 function ArtistAgreement() {

@@ -1,14 +1,16 @@
-// src/components/PrivateRoute.jsx
+// guard route that requires authenticated user
 import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";
 
+// private route component
 export default function PrivateRoute({ children }) {
   const [ready, setReady] = useState(false);
   const [authed, setAuthed] = useState(false);
   const location = useLocation();
 
+  // watch auth state and set readiness
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
       setAuthed(!!u);
@@ -18,8 +20,8 @@ export default function PrivateRoute({ children }) {
   }, []);
 
   if (!ready) {
-    // simple loader; swap for your spinner if you like
-    return <div className="p-8 text-center text-sm text-gray-500">Loading…</div>;
+    // initial loading indicator
+    return <div className="p-8 text-center text-sm text-gray-500">loading…</div>;
   }
 
   return authed ? (

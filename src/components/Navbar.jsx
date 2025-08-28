@@ -1,28 +1,32 @@
-// src/components/Navbar.jsx
+// navbar shows navigation links and user session controls
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "../firebase";
 
+// navbar component
 export default function Navbar() {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
+  // subscribe to auth changes
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => setUser(u));
     return () => unsub();
   }, []);
 
+  // sign out user and redirect
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      localStorage.removeItem("token"); // if you store one
+      localStorage.removeItem("token"); 
       navigate("/login");
     } catch (e) {
       console.error("Logout failed:", e);
     }
   };
 
+  // user initial shown in avatar
   const initial =
     user?.email?.charAt(0)?.toUpperCase() ||
     user?.displayName?.charAt(0)?.toUpperCase();

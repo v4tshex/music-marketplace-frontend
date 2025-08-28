@@ -1,3 +1,4 @@
+// static page explaining copyright and licensing
 import React from 'react';
 
 function CopyrightLicensing() {

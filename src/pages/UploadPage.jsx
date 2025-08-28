@@ -1,15 +1,17 @@
+// page for uploading a track and its metadata
 import React, { useState } from "react";
-import axios from "axios";
+
 import { v4 as uuidv4 } from "uuid";
 import { auth } from "../firebase";
 import { getAuth } from "firebase/auth";
-import { uploadSong } from "../api/api";
+import { uploadSong, api as uploadSongAPI } from "../api/api";
 
 const currentUser = auth.currentUser;
 
 
+// upload form component
 const UploadForm = () => {
-  // Individual track form states
+  
   const [musicFile, setMusicFile] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
@@ -22,16 +24,18 @@ const UploadForm = () => {
   const [acceptedArtistAgreement, setAcceptedArtistAgreement] = useState(false);
   const [confirmedOwnership, setConfirmedOwnership] = useState(false);
   
-  // Upload session states
+  
   const [uploadedTracks, setUploadedTracks] = useState([]);
   const [currentUploadProgress, setCurrentUploadProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState("");
   const [isUploading, setIsUploading] = useState(false);
 
+  // select audio file
   const handleMusicChange = (e) => {
     setMusicFile(e.target.files[0]);
   };
 
+  // select artwork image
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     setImageFile(file);
@@ -40,6 +44,7 @@ const UploadForm = () => {
     }
   };
 
+// upload song file to backend and save metadata
 const handleUpload = async () => {
   const auth = getAuth();
   const user = auth.currentUser;
@@ -70,15 +75,19 @@ const handleUpload = async () => {
     setUploadStatus("Uploading files...");
     setCurrentUploadProgress(0);
 
-   // const uploadRes = await axios.post("http://localhost:5000/upload", formData, {
-    const uploadRes = await uploadSong(formData);
+    const uploadRes = await uploadSong(formData, (event) => {
+      if (!event.total) return;
+      const percent = Math.round((event.loaded * 100) / event.total);
+      setCurrentUploadProgress(percent);
+    });
 
     const { fileUrl, imageUrl } = uploadRes.data;
 
     setUploadStatus("Saving metadata...");
     const songId = uuidv4();
 
-    await axios.post("http://localhost:5000/metadata", {
+    
+    await uploadSongAPI.post('/metadata', {
       songId,
       title,
       artist,
@@ -91,7 +100,7 @@ const handleUpload = async () => {
       userId: user.uid,
     });
 
-    // Add to uploaded tracks list
+    
     const newTrack = {
       id: songId,
       title,
@@ -108,7 +117,7 @@ const handleUpload = async () => {
     setUploadedTracks(prev => [...prev, newTrack]);
     setUploadStatus(`"${title}" uploaded successfully!`);
     
-    // Reset current upload form
+    
     resetCurrentForm();
     
   } catch (err) {
@@ -168,7 +177,7 @@ const startNewUploadSession = () => {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: uploadedTracks.length > 0 ? "1fr 1fr" : "1fr", gap: "30px" }}>
-        {/* Upload Form */}
+        {}
         <div style={{ backgroundColor: "#111", padding: "20px", borderRadius: "8px" }}>
           <h3 style={{ color: "#ffffff", marginTop: 0 }}>
             {uploadedTracks.length > 0 ? "Upload Another Track" : "Upload Track"}
@@ -261,7 +270,7 @@ const startNewUploadSession = () => {
             }}
           />
           
-          {/* Explicit Content Checkbox */}
+          {}
           <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", gap: "10px" }}>
             <input
               type="checkbox"
@@ -304,36 +313,7 @@ const startNewUploadSession = () => {
             <label style={{ color: "#ffffff" }}><strong>Artwork (optional)</strong></label><br />
             <input 
               type="file" 
-              accept="image/*" 
-              onChange={handleImageChange} 
-              disabled={isUploading}
-              style={{ 
-                color: "#ffffff", 
-                backgroundColor: "#222", 
-                border: "1px solid #444", 
-                padding: "8px", 
-                borderRadius: "4px", 
-                marginTop: "8px",
-                opacity: isUploading ? 0.6 : 1,
-                width: "100%"
-              }} 
-            />
-            {previewImage && (
-              <img
-                src={previewImage}
-                alt="Preview"
-                style={{
-                  marginTop: 10,
-                  width: 120,
-                  height: 120,
-                  objectFit: "cover",
-                  borderRadius: 6,
-                }}
-              />
-            )}
-          </div>
-
-          {/* Artist Agreement and Rights Confirmation */}
+              accept="image}
           <div style={{ 
             marginBottom: "20px", 
             padding: "15px", 
@@ -430,7 +410,7 @@ const startNewUploadSession = () => {
             {isUploading ? "Uploading..." : "Upload Track"}
           </button>
 
-          {/* Upload Progress Bar */}
+          {}
           {currentUploadProgress > 0 && (
             <div style={{
               width: "100%",
@@ -465,7 +445,7 @@ const startNewUploadSession = () => {
           )}
         </div>
 
-        {/* Uploaded Tracks List */}
+        {}
         {uploadedTracks.length > 0 && (
           <div style={{ backgroundColor: "#111", padding: "20px", borderRadius: "8px" }}>
             <h3 style={{ color: "#ffffff", marginTop: 0 }}>

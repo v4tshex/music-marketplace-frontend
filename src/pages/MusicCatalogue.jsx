@@ -1,3 +1,4 @@
+// catalogue page to browse songs, artists, and user uploads
 import React, { useEffect, useState } from "react";
 import { searchSongs, searchArtists, getArtistSongs, getUserSongs, getRecentUserSongs, purchaseSong, getUserPurchases } from "../api/api";
 import PaymentModal from "../components/PaymentModal";
@@ -15,7 +16,7 @@ function MusicCatalogue() {
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
-  const [viewMode, setViewMode] = useState("songs"); // "songs", "user-songs", "artists", or "artist-songs"
+  const [viewMode, setViewMode] = useState("songs"); 
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     explicit: undefined,
@@ -26,20 +27,20 @@ function MusicCatalogue() {
     sortOrder: "asc"
   });
   
-  // Payment modal state
+  
   const [paymentModal, setPaymentModal] = useState({
     isOpen: false,
     song: null,
-    songType: 'spotify' // 'spotify' or 'user'
+    songType: 'spotify' 
   });
   
-  // Pagination state
+  
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(12); // Changed to 12 for better grid layout
+  const [itemsPerPage] = useState(12); 
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
-  // Fetch songs with search and pagination
+  
   const fetchSongs = async (search = "", page = 1) => {
     setLoading(true);
     try {
@@ -67,7 +68,7 @@ function MusicCatalogue() {
     }
   };
 
-  // Fetch artists with search and pagination
+  
   const fetchArtists = async (search = "", page = 1) => {
     setLoading(true);
     try {
@@ -84,7 +85,7 @@ function MusicCatalogue() {
     }
   };
 
-  // Fetch songs by a specific artist
+  
   const fetchArtistSongs = async (artistId, page = 1) => {
     setLoading(true);
     try {
@@ -102,14 +103,14 @@ function MusicCatalogue() {
     }
   };
 
-  // Fetch user-uploaded songs (recent ones for catalogue)
+  
   const fetchUserSongs = async () => {
     setLoading(true);
     try {
       const res = await getRecentUserSongs();
       setUserSongs(res.data);
       setTotalItems(res.data.length);
-      setTotalPages(1); // No pagination for user songs for now
+      setTotalPages(1); 
       setCurrentPage(1);
     } catch (err) {
       setError("Failed to load recent user songs");
@@ -119,18 +120,18 @@ function MusicCatalogue() {
     }
   };
 
-  // Fetch recent user songs for the catalogue section (doesn't affect loading state)
+  
   const fetchRecentUserSongsForCatalogue = async () => {
     try {
       const res = await getRecentUserSongs();
       setRecentUserSongs(res.data);
     } catch (err) {
       console.error("Error fetching recent user songs for catalogue:", err);
-      // Don't show error to user as this is a secondary feature
+      
     }
   };
 
-  // Unified fetch function that handles songs, artists, and artist songs
+  
   const fetchData = async (search = "", page = 1) => {
     if (viewMode === "songs") {
       await fetchSongs(search, page);
@@ -143,7 +144,7 @@ function MusicCatalogue() {
     }
   };
 
-  // Handle search with debouncing
+  
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       setCurrentPage(1);
@@ -153,12 +154,12 @@ function MusicCatalogue() {
     return () => clearTimeout(timeoutId);
   }, [searchTerm, viewMode, filters, showFilters]);
 
-  // Handle view mode change
+  
   const handleViewModeChange = (newMode) => {
     setViewMode(newMode);
     setCurrentPage(1);
     setError("");
-    setSearchTerm(""); // Clear search when switching modes
+    setSearchTerm(""); 
     setShowFilters(false);
     setFilters({
       explicit: undefined,
@@ -170,27 +171,27 @@ function MusicCatalogue() {
     });
   };
 
-  // Handle artist click to view their songs
+  
   const handleArtistClick = async (artist) => {
     setSelectedArtist(artist);
     setViewMode("artist-songs");
     setCurrentPage(1);
     setError("");
-    setSearchTerm(""); // Clear search when viewing artist songs
+    setSearchTerm(""); 
     await fetchArtistSongs(artist.id, 1);
   };
 
-  // Handle back to artists list
+  
   const handleBackToArtists = () => {
     setViewMode("artists");
     setSelectedArtist(null);
     setArtistSongs([]);
     setCurrentPage(1);
     setError("");
-    fetchData("", 1); // Reload artists list
+    fetchData("", 1); 
   };
 
-  // Handle page change
+  
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
     fetchData(searchTerm, pageNumber);
@@ -214,10 +215,10 @@ function MusicCatalogue() {
       }
     });
 
-    // Initial load
+    
     fetchData("", 1);
     
-    // Also fetch recent user songs for the catalogue section
+    
     fetchRecentUserSongsForCatalogue();
 
     return () => unsubscribe();
@@ -232,7 +233,7 @@ function MusicCatalogue() {
       return;
     }
 
-    // Open payment modal
+    
     setPaymentModal({
       isOpen: true,
       song: song,
@@ -255,7 +256,7 @@ function MusicCatalogue() {
       alert(`Payment successful! You have purchased "${songTitle}" for £${response.data.price}. This is a dummy transaction for university project purposes.`);
       setPurchasedSongIds((prev) => [...prev, paymentModal.song.id]);
       
-      // Log purchase details to console for demonstration
+      
       console.log('Purchase completed:', {
         song: songTitle,
         price: `£${response.data.price}`,
@@ -283,18 +284,18 @@ function MusicCatalogue() {
     });
   };
 
-  // Helper function to get artist names
+  
   const getArtistNames = (trackArtists) => {
     if (!trackArtists || trackArtists.length === 0) return "Unknown Artist";
     return trackArtists.map(ta => ta.artist?.name).filter(Boolean).join(", ");
   };
 
-  // Helper function to get album name
+  
   const getAlbumName = (album) => {
     return album?.name || "Unknown Album";
   };
 
-  // Helper function to get album artwork
+  
   const getAlbumArtwork = (album) => {
     if (!album?.media || album.media.length === 0) {
       console.log('No media found for album:', album?.name);
@@ -303,7 +304,7 @@ function MusicCatalogue() {
     
     console.log('Album media types:', album.media.map(m => ({ type: m.type, url: m.blob_url })));
     
-    // Try to find album artwork from various possible type values
+    
     const albumArt = album.media.find(m => 
       ['album_art', 'cover', 'artwork', 'image', 'album_cover'].includes(m.type)
     );
@@ -313,12 +314,12 @@ function MusicCatalogue() {
       return albumArt.blob_url;
     }
     
-    // If no specific type found, try to use the first media item
+    
     console.log('Using first media item as fallback:', album.media[0]);
     return album.media[0]?.blob_url || null;
   };
 
-  // Debug function to log song data
+  
   const debugSongData = (song) => {
     console.log('=== Song Debug Info ===');
     console.log('Song:', song.name);
@@ -329,22 +330,22 @@ function MusicCatalogue() {
     console.log('========================');
   };
 
-  // Helper function to get artist artwork
+  
   const getArtistArtwork = (artist) => {
-    // Try to get artwork from their albums or tracks
+    
     const albumArt = artist.album_artists?.[0]?.album?.media?.[0]?.blob_url;
     const trackArt = artist.track_artists?.[0]?.track?.album?.media?.[0]?.blob_url;
     return albumArt || trackArt || null;
   };
 
-  // Helper function to get artist stats
+  
   const getArtistStats = (artist) => {
     const trackCount = artist._count?.track_artists || 0;
     const albumCount = artist._count?.album_artists || 0;
     return { trackCount, albumCount };
   };
 
-  // Pagination component
+  
   const Pagination = () => {
     if (totalPages <= 1) return null;
 
@@ -424,9 +425,9 @@ function MusicCatalogue() {
 
   return (
     <div style={{ maxWidth: 1200, margin: "40px auto", padding: "0 20px", backgroundColor: "#000000", color: "#ffffff" }}>
-      {/* Navigation */}
+      {}
       {viewMode === "artist-songs" ? (
-        // Back button for artist songs view
+        
         <div style={{ 
           marginBottom: "20px",
           display: "flex",
@@ -457,7 +458,7 @@ function MusicCatalogue() {
           </div>
         </div>
       ) : (
-        // Toggle buttons for main views
+        
         <div style={{ 
           marginBottom: "20px",
           display: "flex",
@@ -515,7 +516,7 @@ function MusicCatalogue() {
         </div>
       )}
 
-      {/* Search Bar - Hidden in artist-songs and user-songs mode */
+      {
       }
       {viewMode !== "artist-songs" && viewMode !== "user-songs" && (
         <div style={{ 
@@ -570,7 +571,7 @@ function MusicCatalogue() {
         </div>
       )}
 
-      {/* Filters dropdown button and panel (songs view only) */}
+      {}
       {viewMode === "songs" && (
         <div style={{ marginBottom: "10px", display: "flex", justifyContent: "center" }}>
           <button
@@ -708,7 +709,7 @@ function MusicCatalogue() {
           </p>
         )}
 
-        {/* Recent User Uploads Section - Only show in main catalogue */}
+        {}
         {viewMode === "songs" && recentUserSongs.length > 0 && (
           <>
             <div style={{ marginBottom: "40px" }}>
@@ -748,7 +749,7 @@ function MusicCatalogue() {
                       e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.3)";
                     }}
                   >
-                    {/* Album Art */}
+                    {}
                     <div style={{ 
                       marginBottom: "15px", 
                       textAlign: "center",
@@ -789,7 +790,7 @@ function MusicCatalogue() {
                       )}
                     </div>
 
-                    {/* Song Information */}
+                    {}
                     <div>
                       <h4 style={{ margin: "0 0 8px 0", fontSize: "16px", color: "#ffffff", textAlign: "center" }}>
                         {song.title}
@@ -807,7 +808,7 @@ function MusicCatalogue() {
                         Uploaded: {new Date(song.uploadedAt).toLocaleDateString()} • {song.plays || 0} plays
                       </p>
 
-                      {/* Audio Player */}
+                      {}
                       {song.fileUrl && (
                         <div style={{ marginTop: "10px" }}>
                           <audio controls style={{ width: "100%" }}>
@@ -817,7 +818,7 @@ function MusicCatalogue() {
                         </div>
                       )}
 
-                      {/* Purchase Button - Hide if user owns the song */}
+                      {}
                       {currentUser && !purchasedSongIds.includes(song.id) && currentUser.uid !== song.ownerId && (
                         <div style={{ marginTop: "10px", textAlign: "center" }}>
                           <button
@@ -845,7 +846,7 @@ function MusicCatalogue() {
                         </div>
                       )}
 
-                      {/* Own Song Message */}
+                      {}
                       {currentUser && currentUser.uid === song.ownerId && (
                         <div style={{ marginTop: "10px", textAlign: "center" }}>
                           <div style={{
@@ -861,7 +862,7 @@ function MusicCatalogue() {
                         </div>
                       )}
 
-                      {/* Already Purchased */}
+                      {}
                       {currentUser && purchasedSongIds.includes(song.id) && (
                         <div style={{ marginTop: "10px", textAlign: "center" }}>
                           <div style={{
@@ -877,7 +878,7 @@ function MusicCatalogue() {
                         </div>
                       )}
 
-                      {/* Login prompt for non-authenticated users */}
+                      {}
                       {!currentUser && (
                         <div style={{ marginTop: "10px", textAlign: "center" }}>
                           <p style={{ fontSize: "12px", color: "#aaa", marginBottom: "8px" }}>
@@ -890,7 +891,7 @@ function MusicCatalogue() {
                 ))}
               </div>
               
-              {/* Show more link if there are more than 6 songs */}
+              {}
               {recentUserSongs.length > 6 && (
                 <div style={{ textAlign: "center", marginBottom: "20px" }}>
                   <button
@@ -914,10 +915,10 @@ function MusicCatalogue() {
           </>
         )}
 
-        {/* Songs Grid View */}
+        {}
         {!loading && viewMode === "songs" && songs.length > 0 && (
           <>
-            {/* Add section header for Spotify songs */}
+            {}
             <div style={{ marginBottom: "40px" }}>
               <h3 style={{ 
                 color: "#ffffff", 
@@ -937,7 +938,7 @@ function MusicCatalogue() {
               marginBottom: "30px"
             }}>
               {songs.map((song) => {
-                // Debug logging for each song
+                
                 debugSongData(song);
                 
                 return (
@@ -961,7 +962,7 @@ function MusicCatalogue() {
                       e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.3)";
                     }}
                   >
-                    {/* Album Art */}
+                    {}
                     <div style={{ 
                       marginBottom: "15px", 
                       textAlign: "center",
@@ -1011,7 +1012,7 @@ function MusicCatalogue() {
                       })()}
                     </div>
 
-                    {/* Song Information */}
+                    {}
                     <div>
                       <h3 style={{ margin: "0 0 8px 0", fontSize: "16px", color: "#ffffff", textAlign: "center" }}>
                         {song.name}
@@ -1039,7 +1040,7 @@ function MusicCatalogue() {
                         </div>
                       )}
 
-                      {/* Spotify Preview */}
+                      {}
                       {song.preview_url ? (
                         <div style={{ marginTop: "15px" }}>
                           <audio controls style={{ width: "100%" }}>
@@ -1053,7 +1054,7 @@ function MusicCatalogue() {
                         </p>
                       )}
 
-                      {/* Spotify Link */}
+                      {}
                       {song.spotify_url && (
                         <div style={{ marginTop: "10px", textAlign: "center" }}>
                           <a
@@ -1077,7 +1078,7 @@ function MusicCatalogue() {
                         </div>
                       )}
 
-                      {/* Purchase Button (if applicable) */}
+                      {}
                       {currentUser && !purchasedSongIds.includes(song.id) && (
                         <div style={{ marginTop: "10px", textAlign: "center" }}>
                           <button
@@ -1097,7 +1098,7 @@ function MusicCatalogue() {
                         </div>
                       )}
 
-                      {/* Download/Purchased Status for Spotify Songs */}
+                      {}
                       {currentUser && purchasedSongIds.includes(song.id) && (
                         <div style={{ marginTop: "10px", textAlign: "center" }}>
                           {song.preview_url ? (
@@ -1137,12 +1138,12 @@ function MusicCatalogue() {
               })}
             </div>
 
-            {/* Pagination */}
+            {}
             <Pagination />
           </>
         )}
 
-        {/* Artists Grid View */}
+        {}
         {!loading && viewMode === "artists" && artists.length > 0 && (
           <>
             <div style={{
@@ -1177,7 +1178,7 @@ function MusicCatalogue() {
                       e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.3)";
                     }}
                   >
-                    {/* Artist Image */}
+                    {}
                     <div style={{ marginBottom: "15px", textAlign: "center" }}>
                       {artworkUrl ? (
                         <img
@@ -1215,7 +1216,7 @@ function MusicCatalogue() {
                       )}
                     </div>
 
-                    {/* Artist Information */}
+                    {}
                     <div style={{ textAlign: "center" }}>
                       <h3 style={{ margin: "0 0 10px 0", fontSize: "18px", color: "#ffffff" }}>
                         {artist.name}
@@ -1229,7 +1230,7 @@ function MusicCatalogue() {
                         </p>
                       </div>
 
-                      {/* Spotify Link */}
+                      {}
                       {artist.spotify_url && (
                         <div style={{ marginTop: "15px" }}>
                           <a
@@ -1253,7 +1254,7 @@ function MusicCatalogue() {
                         </div>
                       )}
 
-                      {/* Recent Albums/Tracks preview */}
+                      {}
                       {(artist.album_artists?.length > 0 || artist.track_artists?.length > 0) && (
                         <div style={{ marginTop: "15px", fontSize: "12px", color: "#aaa" }}>
                           <p style={{ margin: "0", fontStyle: "italic" }}>
@@ -1271,12 +1272,12 @@ function MusicCatalogue() {
               })}
             </div>
 
-            {/* Pagination */}
+            {}
             <Pagination />
           </>
         )}
 
-        {/* User Songs Grid View */}
+        {}
         {!loading && viewMode === "user-songs" && userSongs.length > 0 && (
           <>
             <div style={{
@@ -1306,7 +1307,7 @@ function MusicCatalogue() {
                     e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.3)";
                   }}
                 >
-                  {/* Album Art */}
+                  {}
                   <div style={{ 
                     marginBottom: "15px", 
                     textAlign: "center",
@@ -1347,7 +1348,7 @@ function MusicCatalogue() {
                     )}
                   </div>
 
-                  {/* Song Information */}
+                  {}
                   <div>
                     <h3 style={{ margin: "0 0 8px 0", fontSize: "16px", color: "#ffffff", textAlign: "center" }}>
                       {song.title}
@@ -1379,7 +1380,7 @@ function MusicCatalogue() {
                       {song.plays} play{song.plays !== 1 ? 's' : ''}
                     </p>
 
-                    {/* Audio Player */}
+                    {}
                     {song.fileUrl && (
                       <div style={{ marginTop: "15px" }}>
                         <audio controls style={{ width: "100%" }}>
@@ -1389,7 +1390,7 @@ function MusicCatalogue() {
                       </div>
                     )}
 
-                    {/* Purchase Button - Hide if user owns the song */}
+                    {}
                     {currentUser && !purchasedSongIds.includes(song.id) && currentUser.uid !== song.ownerId && (
                       <div style={{ marginTop: "15px", textAlign: "center" }}>
                         <button
@@ -1417,7 +1418,7 @@ function MusicCatalogue() {
                       </div>
                     )}
 
-                    {/* Own Song Message */}
+                    {}
                     {currentUser && currentUser.uid === song.ownerId && (
                       <div style={{ marginTop: "15px", textAlign: "center" }}>
                         <div style={{
@@ -1433,7 +1434,7 @@ function MusicCatalogue() {
                       </div>
                     )}
 
-                    {/* Already Purchased */}
+                    {}
                     {currentUser && purchasedSongIds.includes(song.id) && (
                       <div style={{ marginTop: "15px", textAlign: "center" }}>
                         <div style={{
@@ -1449,7 +1450,7 @@ function MusicCatalogue() {
                       </div>
                     )}
 
-                    {/* Login prompt for non-authenticated users */}
+                    {}
                     {!currentUser && (
                       <div style={{ marginTop: "15px", textAlign: "center" }}>
                         <p style={{ fontSize: "12px", color: "#aaa", marginBottom: "8px" }}>
@@ -1478,7 +1479,7 @@ function MusicCatalogue() {
           </>
         )}
 
-        {/* Artist Songs Grid View */}
+        {}
         {!loading && viewMode === "artist-songs" && artistSongs.length > 0 && (
           <>
             <div style={{
@@ -1488,7 +1489,7 @@ function MusicCatalogue() {
               marginBottom: "30px"
             }}>
               {artistSongs.map((song) => {
-                // Debug logging for each song
+                
                 debugSongData(song);
                 
                 return (
@@ -1512,7 +1513,7 @@ function MusicCatalogue() {
                       e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.3)";
                     }}
                   >
-                    {/* Album Art */}
+                    {}
                     <div style={{ 
                       marginBottom: "15px", 
                       textAlign: "center",
@@ -1562,7 +1563,7 @@ function MusicCatalogue() {
                       })()}
                     </div>
 
-                    {/* Song Information */}
+                    {}
                     <div>
                       <h3 style={{ margin: "0 0 8px 0", fontSize: "16px", color: "#ffffff", textAlign: "center" }}>
                         {song.name}
@@ -1590,7 +1591,7 @@ function MusicCatalogue() {
                         </div>
                       )}
 
-                      {/* Spotify Preview */}
+                      {}
                       {song.preview_url ? (
                         <div style={{ marginTop: "15px" }}>
                           <audio controls style={{ width: "100%" }}>
@@ -1604,7 +1605,7 @@ function MusicCatalogue() {
                         </p>
                       )}
 
-                      {/* Spotify Link */}
+                      {}
                       {song.spotify_url && (
                         <div style={{ marginTop: "10px", textAlign: "center" }}>
                           <a
@@ -1628,7 +1629,7 @@ function MusicCatalogue() {
                         </div>
                       )}
 
-                      {/* Purchase Button (if applicable) */}
+                      {}
                       {currentUser && !purchasedSongIds.includes(song.id) && (
                         <div style={{ marginTop: "10px", textAlign: "center" }}>
                           <button
@@ -1648,7 +1649,7 @@ function MusicCatalogue() {
                         </div>
                       )}
 
-                      {/* Download/Purchased Status for Spotify Songs */}
+                      {}
                       {currentUser && purchasedSongIds.includes(song.id) && (
                         <div style={{ marginTop: "10px", textAlign: "center" }}>
                           {song.preview_url ? (
@@ -1688,13 +1689,13 @@ function MusicCatalogue() {
               })}
             </div>
 
-            {/* Pagination */}
+            {}
             <Pagination />
           </>
         )}
       </div>
 
-      {/* Payment Modal */}
+      {}
       <PaymentModal
         isOpen={paymentModal.isOpen}
         onClose={closePaymentModal}

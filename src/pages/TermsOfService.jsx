@@ -1,3 +1,4 @@
+// static legal page: terms of service
 import React from 'react';
 
 function TermsOfService() {

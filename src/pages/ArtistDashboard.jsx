@@ -1,3 +1,4 @@
+// dashboard for artists to manage uploads and royalties
 import React, { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";
@@ -5,11 +6,13 @@ import axios from "axios";
 import MusicPlayer from "../components/MusicPlayer";
 import { getUserSongs, deleteSong } from "../api/api";
 
+// artist dashboard page
 function ArtistDashboard() {
   const [mySongs, setMySongs] = useState([]);
   const [error, setError] = useState("");
   const [royalties, setRoyalties] = useState({});
 
+  // fetch user songs and compute royalties on auth ready
   useEffect(() => {
     let isMounted = true;
 
@@ -21,7 +24,7 @@ function ArtistDashboard() {
         if (isMounted) {
           setMySongs(response.data);
 
-          // Fetch royalties for each song
+          
           const royaltyPromises = response.data.map((song) =>
             axios.post("http://localhost:5000/calculate-royalty", {
               songId: song.id,
@@ -49,6 +52,7 @@ function ArtistDashboard() {
     };
   }, []);
 
+  // delete a user uploaded song
   const handleDelete = async (songId) => {
     if (!window.confirm("Are you sure you want to delete this song?")) return;
 
@@ -56,7 +60,7 @@ function ArtistDashboard() {
       await deleteSong(songId);
       setMySongs((prev) => prev.filter((song) => song.id !== songId));
 
-      // Also remove its royalty data
+      
       setRoyalties((prev) => {
         const updated = { ...prev };
         delete updated[songId];

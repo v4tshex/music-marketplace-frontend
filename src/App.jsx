@@ -1,3 +1,4 @@
+// app component that defines client routes
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MusicCatalogue from "./pages/MusicCatalogue";
 import UploadPage from "./pages/UploadPage";
@@ -63,7 +64,7 @@ function App() {
               }
             />
 
-            {/* Legal and Compliance Pages */}
+            {/* legal routes */}
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/artist-agreement" element={<ArtistAgreement />} />

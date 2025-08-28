@@ -1,6 +1,9 @@
+// simple audio player with play tracking
 import React from "react";
 
+// music player component
 function MusicPlayer({ src, title = "", artist = "", id = "" }) {
+  // notify backend that track started playing
   const handlePlay = async () => {
     if (id) {
       try {

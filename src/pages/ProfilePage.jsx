@@ -1,10 +1,11 @@
-// src/pages/ProfilePage.js
+// page for viewing and editing user profile
 import React, { useState, useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import { getUser, updateUser } from "../api/api";
 
+// profile page component
 function ProfilePage() {
   const [user, loading, error] = useAuthState(auth);
   const [profile, setProfile] = useState(null);
@@ -14,7 +15,7 @@ function ProfilePage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const navigate = useNavigate();
 
-  // Form states
+  
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -32,19 +33,21 @@ function ProfilePage() {
     "Funk", "Gospel", "Latin", "World Music"
   ];
 
+  // when authed, load profile from backend
   useEffect(() => {
     if (user) {
       fetchUserProfile();
     }
   }, [user]);
 
+  // retrieve profile and populate local form state
   const fetchUserProfile = async () => {
     try {
       const response = await getUser(user.uid);
       const profileData = response.data;
       setProfile(profileData);
       
-      // Populate form fields
+      
       setFirstName(profileData.firstName || "");
       setLastName(profileData.lastName || "");
       setDisplayName(profileData.displayName || "");
@@ -57,7 +60,7 @@ function ProfilePage() {
       setArtistName(profileData.artistName || "");
     } catch (error) {
       console.error("Error fetching profile:", error);
-      // If profile doesn't exist, user might need to complete registration
+      
       if (error.response?.status === 404) {
         navigate("/register");
       }
@@ -95,7 +98,7 @@ function ProfilePage() {
       await updateUser(user.uid, userData);
       setSaveSuccess(true);
       setIsEditing(false);
-      fetchUserProfile(); // Refresh profile data
+      fetchUserProfile(); 
       
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (error) {
@@ -108,7 +111,7 @@ function ProfilePage() {
   const handleCancel = () => {
     setIsEditing(false);
     setSaveError("");
-    // Reset form to original values
+    
     if (profile) {
       setFirstName(profile.firstName || "");
       setLastName(profile.lastName || "");
@@ -197,7 +200,7 @@ function ProfilePage() {
           borderRadius: "8px", 
           border: "1px solid #333" 
         }}>
-          {/* Basic Information */}
+          {}
           <h3 style={{ color: "#007bff", marginBottom: "15px" }}>Basic Information</h3>
           <div style={{ marginBottom: "20px" }}>
             <label style={{ display: "block", marginBottom: "5px", color: "#ccc" }}>Email</label>
@@ -290,7 +293,7 @@ function ProfilePage() {
             />
           </div>
 
-          {/* Music Preferences */}
+          {}
           <h3 style={{ color: "#007bff", marginBottom: "15px" }}>Music Preferences</h3>
           <div style={{ marginBottom: "30px" }}>
             <p style={{ fontSize: "14px", color: "#ccc", marginBottom: "10px" }}>Favorite genres:</p>
@@ -316,7 +319,7 @@ function ProfilePage() {
             </div>
           </div>
 
-          {/* Artist Information */}
+          {}
           <h3 style={{ color: "#007bff", marginBottom: "15px" }}>Artist Information</h3>
           <div style={{ marginBottom: "20px" }}>
             <label style={{ 

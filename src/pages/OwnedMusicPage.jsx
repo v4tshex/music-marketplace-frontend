@@ -1,13 +1,16 @@
+// page showing songs purchased by the current user
 import React, { useEffect, useState } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getUserPurchases } from "../api/api";
 
+// owned music page
 function OwnedMusicPage() {
   const [purchases, setPurchases] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // load purchases after auth status is known
   useEffect(() => {
     const auth = getAuth();
     
@@ -34,9 +37,10 @@ function OwnedMusicPage() {
     return () => unsubscribe();
   }, []);
 
+  // trigger browser download for a purchased track
   const handleDownload = (song) => {
     if (song.fileUrl) {
-      // Create a temporary link to download the file
+      
       const link = document.createElement('a');
       link.href = song.fileUrl;
       link.download = `${song.title} - ${song.artist}.mp3`;
@@ -158,7 +162,7 @@ function OwnedMusicPage() {
                     e.currentTarget.style.boxShadow = "0 4px 8px rgba(0,0,0,0.3)";
                   }}
                 >
-                  {/* Album Art */}
+                  {}
                   <div style={{
                     marginBottom: "15px",
                     textAlign: "center",
@@ -166,7 +170,7 @@ function OwnedMusicPage() {
                     justifyContent: "center",
                     alignItems: "center"
                   }}>
-                    {/* Prefer user song imageUrl; fallback to spotify album media[0].blob_url */}
+                    {}
                     {(song && song.imageUrl) ? (
                       <img
                         src={song.imageUrl}
@@ -215,7 +219,7 @@ function OwnedMusicPage() {
                     )}
                   </div>
 
-                  {/* Song Information */}
+                  {}
                   <div style={{ textAlign: "center", marginBottom: "15px" }}>
                     <h3 style={{
                       margin: "0 0 8px 0",
@@ -249,7 +253,7 @@ function OwnedMusicPage() {
                     </p>
                   </div>
 
-                  {/* Audio Player */}
+                  {}
                   {(song && song.fileUrl) || (song && song.preview_url) ? (
                     <div style={{ marginBottom: "15px" }}>
                       <audio controls style={{ width: "100%" }}>
@@ -259,7 +263,7 @@ function OwnedMusicPage() {
                     </div>
                   ) : null}
 
-                  {/* Download Button */}
+                  {}
                   <div style={{ textAlign: "center" }}>
                     <button
                       onClick={() => handleDownload(song)}
@@ -285,7 +289,7 @@ function OwnedMusicPage() {
                     </button>
                   </div>
 
-                  {/* Play count if available */}
+                  {}
                   {song && song.plays > 0 && (
                     <div style={{
                       marginTop: "10px",

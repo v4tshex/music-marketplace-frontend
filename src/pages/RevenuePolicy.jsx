@@ -1,3 +1,4 @@
+// static page describing revenue and royalty policy
 import React from 'react';
 
 function RevenuePolicy() {

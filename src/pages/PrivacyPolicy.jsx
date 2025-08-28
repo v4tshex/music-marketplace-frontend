@@ -1,3 +1,4 @@
+// static legal page: privacy policy
 import React from 'react';
 
 function PrivacyPolicy() {

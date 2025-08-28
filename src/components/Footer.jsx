@@ -1,6 +1,8 @@
+// footer with links and legal info
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+// footer component
 function Footer() {
   return (
     <footer style={{ 
@@ -16,7 +18,7 @@ function Footer() {
           gap: "30px",
           marginBottom: "30px"
         }}>
-          {/* Company Info */}
+          {/* brand and about */}
           <div>
             <h3 style={{ color: "#007bff", marginBottom: "15px", fontSize: "18px" }}>
               Music Marketplace
@@ -30,7 +32,7 @@ function Footer() {
             </p>
           </div>
 
-          {/* Legal & Compliance */}
+          {/* legal links */}
           <div>
             <h4 style={{ color: "#fff", marginBottom: "15px", fontSize: "16px" }}>
               Legal & Compliance
@@ -114,7 +116,7 @@ function Footer() {
             </ul>
           </div>
 
-          {/* For Artists */}
+          {/* artist helper links */}
           <div>
             <h4 style={{ color: "#fff", marginBottom: "15px", fontSize: "16px" }}>
               For Artists
@@ -168,7 +170,7 @@ function Footer() {
             </ul>
           </div>
 
-          {/* Support & Contact */}
+          {/* support links */}
           <div>
             <h4 style={{ color: "#fff", marginBottom: "15px", fontSize: "16px" }}>
               Support & Contact
@@ -238,7 +240,7 @@ function Footer() {
           </div>
         </div>
 
-        {/* Bottom Section */}
+        {/* bottom bar */}
         <div style={{ 
           borderTop: "1px solid #333", 
           paddingTop: "20px",
