@@ -2,11 +2,8 @@
 import React, { useState } from "react";
 
 import { v4 as uuidv4 } from "uuid";
-import { auth } from "../firebase";
 import { getAuth } from "firebase/auth";
 import { uploadSong, api as uploadSongAPI } from "../api/api";
-
-const currentUser = auth.currentUser;
 
 
 // upload form component
@@ -177,7 +174,6 @@ const startNewUploadSession = () => {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: uploadedTracks.length > 0 ? "1fr 1fr" : "1fr", gap: "30px" }}>
-        {}
         <div style={{ backgroundColor: "#111", padding: "20px", borderRadius: "8px" }}>
           <h3 style={{ color: "#ffffff", marginTop: 0 }}>
             {uploadedTracks.length > 0 ? "Upload Another Track" : "Upload Track"}
@@ -270,7 +266,6 @@ const startNewUploadSession = () => {
             }}
           />
           
-          {}
           <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", gap: "10px" }}>
             <input
               type="checkbox"
@@ -313,7 +308,21 @@ const startNewUploadSession = () => {
             <label style={{ color: "#ffffff" }}><strong>Artwork (optional)</strong></label><br />
             <input 
               type="file" 
-              accept="image}
+              accept="image/*"
+              onChange={handleImageChange}
+              disabled={isUploading}
+              style={{ 
+                color: "#ffffff", 
+                backgroundColor: "#222", 
+                border: "1px solid #444", 
+                padding: "8px", 
+                borderRadius: "4px", 
+                marginTop: "8px",
+                opacity: isUploading ? 0.6 : 1,
+                width: "100%"
+              }} 
+            />
+          </div>
           <div style={{ 
             marginBottom: "20px", 
             padding: "15px", 
@@ -410,7 +419,6 @@ const startNewUploadSession = () => {
             {isUploading ? "Uploading..." : "Upload Track"}
           </button>
 
-          {}
           {currentUploadProgress > 0 && (
             <div style={{
               width: "100%",
@@ -445,7 +453,6 @@ const startNewUploadSession = () => {
           )}
         </div>
 
-        {}
         {uploadedTracks.length > 0 && (
           <div style={{ backgroundColor: "#111", padding: "20px", borderRadius: "8px" }}>
             <h3 style={{ color: "#ffffff", marginTop: 0 }}>
